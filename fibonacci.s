@@ -24,7 +24,7 @@ main:
 	cmove rdx, rax
 	je 3f
 
-	mov rcx, 2
+	mov rcx, 1
 	mov rdx, 1
 	mov rbx, 1
 1:
@@ -32,8 +32,8 @@ main:
 	je 3f
 2:
 	inc rcx
-	add rbx, rdx
-	xchg rbx, rdx
+	xadd rbx, rdx
+	#xchg rbx, rdx
 	jmp 1b
 3:
 	sub rsp, 8
