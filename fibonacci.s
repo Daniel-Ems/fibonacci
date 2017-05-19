@@ -9,17 +9,26 @@ main:
 	cmp rdi, 2
 	jne Error
 	
-	mov rdi, [rsi + 8]
-	mov rsi, 0 
-	mov rdx, 10
 	sub rsp, 8
+	mov rdi, [rsi + 8]	#Set the first argument of strtol
+	mov rsi, rsp 		#Set second argument of strtol
+	mov rdx, 10		#Set the third argument of strtol
 	call strtol
-	add rsp, 8
+	#add rsp, 8		#Rewind stack
 
+	mov rbx, [rsp]
+	add rsp, 8
+	cmp BYTE PTR[rbx], 0
+	jne Error
+
+
+	#Check if they are requesting f0
 	cmp rax, 0
 	cmove rdx, rax
+	jl Error
 	je 3f
 
+	#Check if they are requesting the f1
 	cmp rax, 1
 	cmove rdx, rax
 	je 3f
