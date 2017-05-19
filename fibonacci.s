@@ -1,22 +1,25 @@
 .intel_syntax noprefix
 
-ErrorStr:
-	.asciz "Usage ./fibonacci <0-100>"
-Arg:
-	.asciz "0x%lx%lx\n"
+ErrorStr:			#Format string to fprintf error message
+	.asciz "Usage: %s <0-300>\n"
+
+Arg:				#Format string to printf 
+	.asciz "0x%016lx%016lx%016lx%016lx\n"
+
 .globl main
 main:
 	cmp rdi, 2		#User must supply exactly 1 cmd line arg
 	jne Error		
 	
-	sub rsp, 8		#Create a space on stack for strtol err., and byte align for function call
+	push [rsi]		#Store name of program on stack
+	sub rsp, 16		#Create a space on stack for strtol err., and byte align for function call
 	mov rdi, [rsi + 8]	#Set cmd line arg as first arg for strtol
 	mov rsi, rsp 		#Set pointer created earlier as second arg for strtol
 	mov rdx, 10		#Set the number base for strtol
 	call strtol
 
 	mov rbx, [rsp]		#Move any errors off the stack
-	add rsp, 8		#Rewind the stack
+	add rsp, 16		#Rewind the stack
 
 	cmp BYTE PTR[rbx], 0	#User must supply number only
 	jne Error
@@ -24,37 +27,54 @@ main:
 	cmp rax, 0		#User must supply a positive value			
 	jl Error	
 
-	xor r11, r11		#Ensure registers are set to 0 if never used
-	xor r14, r14		
+	cmp rax, 300		#User must supply a value less than 300
+	jg Error
+
+	xor r9, r9		#Ensure overflow registers are set to 0 if never used
+	xor r10, r10
+	xor r11, r11	
+	xor r12, r12		
+	xor r13, r13
+	xor r14, r14
 
 	cmp rax, 0		#f0 is hardcoded
 	cmove rdx, rax	
 	je Print
 
+	mov rbx, rax		#Free up rax register for math operations
 	mov rcx, 0		#Counter starts at zero
 	mov rdx, 1		#Value initialized to start calculating at f2. f0, f1 are hardcoded.	
-	mov rbx, 0		#Value initialized to start calculating at f2. f0, f1 are hardcoded.
+	mov rax, 0		#Value initialized to start calculating at f2. f0, f1 are hardcoded.
 
 Fibonacci:			#Loop will run until counter is equal to the cmd line arg.
 
-	xadd rbx, rdx		#Switch then add, allow for incrementing fibonacci sequence accurately
+	xadd rax, rdx		#Switch then add, allow for incrementing fibonacci sequence accurately
 
-	adc r11, r14		#Overflow registers rbx:r11, rdx:r14
-	xchg r14, r11		#Over flow registers must follow add registers
+	adc r9, r10		#Overflow registers must reflect the position of their add registers
+	adc r11, r12	
+	adc r13, r14
+	
+	xchg r10, r9		#Over flow registers must reflect the position of thier add registers
+	xchg r12, r11		
+	xchg r14, r13
 
-	cmp rcx, rax		#Compare counter to cmd arg,  
-	je Print		#Jump to print
-	inc rcx
-	jmp Fibonacci
+	cmp rcx, rbx		#Compare counter to cmd arg,  
+	je Print		#Jump to print if count == cmd line arg
+	inc rcx			#increment counter if not equal
+	jmp Fibonacci		#continue loop
 
 Print:
 
-	sub rsp, 8		#Align stack for printf
+	#sub rsp, 8		#Align stack for printf
+	mov r10, rdx		#Store rdx value so you can use for argument assignment
 	mov rdi, OFFSET Arg	#Set the first argument for printf
-	mov rsi, r11		#Not used if user cmd line arg == 0
-	mov rdx, rdx		#Set the second argument for printf
+	mov rsi, r13		#Used if rdx and rax overflow
+	mov rdx, r11		#Used if r13 overflows
+	mov rcx, r9		#USed if r11 overflows
+	mov r8, r10		#Used if r10 overflows
 	call printf
-	add rsp, 8 		#rewind the stack
+	pop rbx
+	#add rsp, 8 		#rewind the stack
 
 Exit:
 	
@@ -62,7 +82,11 @@ Exit:
 	ret
 
 Error:				#Exit on error
-
-	mov rdi, OFFSET ErrorStr
-	call puts
+	#sub rsp, 8
+	mov rdi, stderr
+	mov rsi, OFFSET ErrorStr
+	mov rdx, [rsp]
+	call fprintf
+	pop rbx
 	mov eax, 1
+	ret
