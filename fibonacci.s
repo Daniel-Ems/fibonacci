@@ -16,17 +16,21 @@ main:
 	call strtol
 	add rsp, 8
 
-	mov rcx, 0
+	mov rcx, 2
+	mov rdx, 1
+	mov rbx, 1
 1:
 	cmp rcx, rax
 	je 3f
 2:
 	inc rcx
+	add rbx, rdx
+	xchg rbx, rdx
 	jmp 1b
 3:
 	sub rsp, 8
 	mov rdi, OFFSET Arg
-	mov rsi, rcx
+	mov rsi, rdx
 	call printf
 	add rsp, 8 
 	ret
