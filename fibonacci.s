@@ -3,7 +3,7 @@
 ErrorStr:
 	.asciz "Usage ./fibonacci <0-100>"
 Arg:
-	.asciz "number you passed %d\n"
+	.asciz "number you passed %lu\n"
 .globl main
 main:
 	cmp rdi, 2
@@ -15,6 +15,14 @@ main:
 	sub rsp, 8
 	call strtol
 	add rsp, 8
+
+	cmp rax, 0
+	cmove rdx, rax
+	je 3f
+
+	cmp rax, 1
+	cmove rdx, rax
+	je 3f
 
 	mov rcx, 2
 	mov rdx, 1
