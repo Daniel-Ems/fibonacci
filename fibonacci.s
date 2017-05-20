@@ -72,7 +72,7 @@ Print:
 	mov rsi, r13		#Used if rdx and rax overflow
 	mov rdx, r11		#Used if r13 overflows
 	mov rcx, r9		#USed if r11 overflows
-	mov r8, r10		#Used if r10 overflows
+	mov r8, r10		#This is the original register which overflowed with higher numbers
 	call printf
 	pop rbx
 
