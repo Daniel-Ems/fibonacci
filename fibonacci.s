@@ -4,7 +4,7 @@ ErrorStr:			#Format string to fprintf error message
 	.asciz "Usage: %s <0-300>\n"
 
 Arg:				#Format string to printf 
-	.asciz "0x%04lx%016lx%016lx%016lx\n"
+	.asciz "0x%04lX%016lX%016lX%016lX\n"
 
 .globl main
 main:
