@@ -4,7 +4,7 @@ ErrorStr:			#Format string to fprintf error message
 	.asciz "Usage: %s <0-300>\n"
 
 Arg:				#Format string to printf 
-	.asciz "0x%016lx%016lx%016lx%016lx\n"
+	.asciz "0x%04lx%016lx%016lx%016lx\n"
 
 .globl main
 main:
@@ -65,7 +65,6 @@ Fibonacci:			#Loop will run until counter is equal to the cmd line arg.
 
 Print:
 
-	#sub rsp, 8		#Align stack for printf
 	mov r10, rdx		#Store rdx value so you can use for argument assignment
 	mov rdi, OFFSET Arg	#Set the first argument for printf
 	mov rsi, r13		#Used if rdx and rax overflow
@@ -74,7 +73,6 @@ Print:
 	mov r8, r10		#Used if r10 overflows
 	call printf
 	pop rbx
-	#add rsp, 8 		#rewind the stack
 
 Exit:
 	
@@ -82,7 +80,6 @@ Exit:
 	ret
 
 Error:				#Exit on error
-	#sub rsp, 8
 	mov rdi, stderr
 	mov rsi, OFFSET ErrorStr
 	mov rdx, [rsp]
