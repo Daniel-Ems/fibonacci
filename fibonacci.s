@@ -8,10 +8,12 @@ Arg:				#Format string to printf
 
 .globl main
 main:
+
+	push [rsi]		#Store name of program on stack
+
 	cmp rdi, 2		#User must supply exactly 1 cmd line arg
 	jne Error		
 	
-	push [rsi]		#Store name of program on stack
 	sub rsp, 16		#Create a space on stack for strtol err., and byte align for function call
 	mov rdi, [rsi + 8]	#Set cmd line arg as first arg for strtol
 	mov rsi, rsp 		#Set pointer created earlier as second arg for strtol
